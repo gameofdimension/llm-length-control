@@ -44,3 +44,4 @@ def train():
         eval_dataset=tokenized_datasets["valid"],
     )
     trainer.train()
+    trainer.push_to_hub()
