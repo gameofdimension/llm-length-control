@@ -28,7 +28,7 @@ def train():
     model = build_lora_model()
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
-    tokenized_datasets = prepare_data(context_length, tokenizer, 5000, 500)
+    tokenized_datasets = prepare_data(context_length, tokenizer, 100000, 1000)
 
     args = get_train_args(
         gradient_accumulation_steps=1,
