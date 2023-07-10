@@ -1,6 +1,7 @@
 from datasets import load_dataset, DatasetDict
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import TrainingArguments
+from transformers.training_args import OptimizerNames
 
 
 def tokenize(element, context_length, tokenizer):
@@ -34,6 +35,7 @@ def get_train_args(
         gradient_accumulation_steps: int,
         output_dir: str, save_steps: int, warmup_steps: int):
     args = TrainingArguments(
+        optim=OptimizerNames.ADAMW_TORCH,
         # output_dir="cs324-length-control",
         output_dir=output_dir,
         per_device_train_batch_size=32,
