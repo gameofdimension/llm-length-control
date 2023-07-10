@@ -1,4 +1,5 @@
-from transformers import DataCollatorForLanguageModeling
+import torch
+from transformers import DataCollatorForLanguageModeling, AutoTokenizer, AutoModelForCausalLM
 from transformers import Trainer
 
 from src.common import make_tokenizer, build_model, prepare_data, get_train_args
@@ -29,3 +30,26 @@ def train():
     trainer.train()
     trainer.push_to_hub()
 
+
+class Sampler:
+    def __init__(self, device='cpu'):
+        model_id = "felixdae/lora-cs324-length-control"
+        model = AutoModelForCausalLM.from_pretrained(model_id)
+        model = model.to(device)
+        model.eval()
+
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+        self.model = model
+        self.tokenizer = tokenizer
+        self.device = device
+
+    def generate(self, n: int):
+        inputs = self.tokenizer(f"<len> {n} <text>", return_tensors="pt")
+        with torch.no_grad():
+            outputs = self.model.generate(
+                input_ids=inputs["input_ids"].to(self.device),
+                do_sample=True,
+                pad_token_id=self.tokenizer.eos_token_id,
+                max_new_tokens=2048)
+            return self.tokenizer.batch_decode(outputs.detach().cpu().numpy())[0]
