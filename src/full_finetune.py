@@ -17,7 +17,7 @@ def train():
     args = get_train_args(
         gradient_accumulation_steps=8,
         output_dir="cs324-length-control",
-        save_steps=5000, warmup_steps=1000)
+        save_steps=2000, warmup_steps=1000)
 
     trainer = Trainer(
         args=args,
