@@ -1,20 +1,37 @@
+from peft import LoraConfig, TaskType, get_peft_model
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer
 
 from code.common import make_tokenizer, build_model, prepare_data, get_train_args
 
 
+def build_lora_model():
+    model = build_model()
+    peft_config = LoraConfig(
+        task_type=TaskType.CAUSAL_LM,
+        inference_mode=False,
+        r=8,
+        lora_alpha=32,
+        lora_dropout=0.1,
+    )
+
+    model = get_peft_model(model, peft_config)
+    model.is_parallelizable = True
+    model.model_parallel = True
+    return model
+
+
 def train():
     context_length = 128
 
     tokenizer = make_tokenizer()
-    model = build_model()
+    model = build_lora_model()
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
-    tokenized_datasets = prepare_data(context_length, tokenizer, 50000, 500)
+    tokenized_datasets = prepare_data(context_length, tokenizer, 5000, 500)
 
     args = get_train_args(
-        output_dir="cs324-length-control", save_steps=5000, warmup_steps=1000)
+        output_dir="lora-cs324-length-control", save_steps=500, warmup_steps=100)
 
     trainer = Trainer(
         model=model,
