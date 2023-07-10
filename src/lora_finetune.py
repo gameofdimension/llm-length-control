@@ -31,7 +31,9 @@ def train():
     tokenized_datasets = prepare_data(context_length, tokenizer, 5000, 500)
 
     args = get_train_args(
-        output_dir="lora-cs324-length-control", save_steps=500, warmup_steps=100)
+        gradient_accumulation_steps=1,
+        output_dir="lora-cs324-length-control",
+        save_steps=500, warmup_steps=100)
 
     trainer = Trainer(
         model=model,

@@ -30,14 +30,16 @@ def prepare_data(context_length, tokenizer, train_num: int, valid_num: int):
     return tokenized_datasets
 
 
-def get_train_args(output_dir: str, save_steps: int, warmup_steps: int):
+def get_train_args(
+        gradient_accumulation_steps: int,
+        output_dir: str, save_steps: int, warmup_steps: int):
     args = TrainingArguments(
         # output_dir="cs324-length-control",
         output_dir=output_dir,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
         evaluation_strategy="steps",
-        gradient_accumulation_steps=8,
+        gradient_accumulation_steps=gradient_accumulation_steps,
         # eval_steps=5_000,
         # logging_steps=5_000,
         # save_steps=5_000,

@@ -14,7 +14,9 @@ def train():
     tokenized_datasets = prepare_data(context_length, tokenizer, 50000, 500)
 
     args = get_train_args(
-        output_dir="cs324-length-control", save_steps=5000, warmup_steps=1000)
+        gradient_accumulation_steps=8,
+        output_dir="cs324-length-control",
+        save_steps=5000, warmup_steps=1000)
 
     trainer = Trainer(
         model=model,
