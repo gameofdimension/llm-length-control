@@ -20,9 +20,9 @@ def train():
         save_steps=5000, warmup_steps=1000)
 
     trainer = Trainer(
+        args=args,
         model=model,
         tokenizer=tokenizer,
-        args=args,
         data_collator=data_collator,
         train_dataset=tokenized_datasets["train"],
         eval_dataset=tokenized_datasets["valid"],
@@ -51,5 +51,6 @@ class Sampler:
                 input_ids=inputs["input_ids"].to(self.device),
                 do_sample=True,
                 pad_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=2048)
-            return self.tokenizer.batch_decode(outputs.detach().cpu().numpy())[0]
+                max_new_tokens=1000)
+            output_ids = outputs.detach().cpu().numpy()
+            return output_ids, self.tokenizer.batch_decode(output_ids)[0]
