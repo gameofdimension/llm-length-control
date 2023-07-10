@@ -33,7 +33,7 @@ def train():
 
 class Sampler:
     def __init__(self, device='cpu'):
-        model_id = "felixdae/lora-cs324-length-control"
+        model_id = "felixdae/cs324-length-control"
         model = AutoModelForCausalLM.from_pretrained(model_id)
         model = model.to(device)
         model.eval()
