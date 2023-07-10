@@ -1,7 +1,7 @@
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer
 
-from code.common import make_tokenizer, build_model, prepare_data, get_train_args
+from src.common import make_tokenizer, build_model, prepare_data, get_train_args
 
 
 def train():

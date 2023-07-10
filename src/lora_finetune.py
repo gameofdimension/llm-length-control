@@ -2,7 +2,7 @@ from peft import LoraConfig, TaskType, get_peft_model
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer
 
-from code.common import make_tokenizer, build_model, prepare_data, get_train_args
+from src.common import make_tokenizer, build_model, prepare_data, get_train_args
 
 
 def build_lora_model():
