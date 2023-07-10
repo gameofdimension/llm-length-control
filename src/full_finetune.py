@@ -11,7 +11,7 @@ def train():
     model = build_model()
 
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
-    tokenized_datasets = prepare_data(context_length, tokenizer, 50000, 500)
+    tokenized_datasets = prepare_data(context_length, tokenizer, 2000000, 2000)
 
     args = get_train_args(
         gradient_accumulation_steps=8,
@@ -27,3 +27,4 @@ def train():
         eval_dataset=tokenized_datasets["valid"],
     )
     trainer.train()
+    trainer.push_to_hub()
