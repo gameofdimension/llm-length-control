@@ -160,5 +160,7 @@ def train(data_path, max_ppo_steps):
         print(f'ppo/returns/mean: {stats["ppo/returns/mean"]}')
         print(f'ppo/policy/advantages_mean: {stats["ppo/policy/advantages_mean"]}')
         print('-' * 100)
+        if (1 + step) % 10 == 0:
+            ppo_model.push_to_hub("felixdae/rl-cs324-length-control")
 
     ppo_model.push_to_hub("felixdae/rl-cs324-length-control")
