@@ -22,8 +22,6 @@ def build_ppo_model():
     ppo_model = AutoModelForCausalLMWithValueHead.from_pretrained(
         peft_model, is_trainable=True)
     ref_model = create_reference_model(ppo_model)
-    # model = model.to(device)
-    # model.eval()
 
     tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
     tokenizer.pad_token = tokenizer.eos_token
@@ -79,9 +77,7 @@ def make_ppo_trainer(data_path):
     tokenizer, ppo_model, ref_model = build_ppo_model()
     config = make_ppo_config()
 
-    # context_length = 128
-    # tokenized_datasets = prepare_data(context_length, tokenizer, 100000, 1000)
-    dataset = prep_data(tokenizer, 100_000, data_path)
+    dataset = prep_data(tokenizer, 1_000, data_path)
 
     ppo_trainer = PPOTrainer(
         config=config,
@@ -91,7 +87,7 @@ def make_ppo_trainer(data_path):
         dataset=dataset,
         data_collator=rl_collator,
     )
-    return tokenizer, ppo_trainer
+    return tokenizer, ppo_model, ppo_trainer
 
 
 def compute_reward(tokenizer, prompt: str, output_ids) -> float:
@@ -100,26 +96,8 @@ def compute_reward(tokenizer, prompt: str, output_ids) -> float:
     return -(len(output_ids) - (prefix_token_number + 1) - target) ** 2
 
 
-def train(data_path):
-    # output_min_length = 100
-    # output_max_length = 400
-    # output_length_sampler = LengthSampler(output_min_length, output_max_length)
-
-    # generation_kwargs = {
-    #     "min_length": 5,
-    #     "top_k": 0.0,
-    #     "top_p": 1.0,
-    #     "do_sample": True
-    # }
-
-    # reward_kwargs = {
-    #     "top_k": None,  # Return all scores.
-    #     "function_to_apply": "none",  # You want the raw logits without softmax.
-    #     "batch_size": 16
-    # }
-
-    max_ppo_steps = 10
-    tokenizer, ppo_trainer = make_ppo_trainer(data_path)
+def train(data_path, max_ppo_steps):
+    tokenizer, ppo_model, ppo_trainer = make_ppo_trainer(data_path)
 
     generation_kwargs = {
         "do_sample": True,
@@ -136,18 +114,12 @@ def train(data_path):
         prompts = batch['query']
         prompt_tensors = batch["input_ids"]
 
-        # Get response from FLAN-T5/PEFT LLM.
         summary_tensors = []
         reward_tensors = []
 
         for prompt, prompt_tensor in zip(prompts, prompt_tensors):
-            # max_new_tokens = output_length_sampler()
-
-            # generation_kwargs["max_new_tokens"] = max_new_tokens
-            # print(prompt, prompt_tensor)
             summary = ppo_trainer.generate(prompt_tensor, **generation_kwargs)
 
-            # summary_tensors.append(summary.squeeze()[-max_new_tokens:])
             output_ids = summary.squeeze()
             summary_tensors.append(output_ids)
             reward = compute_reward(tokenizer, prompt, output_ids)
@@ -156,25 +128,14 @@ def train(data_path):
         # This needs to be called "response".
         batch["response"] = [tokenizer.decode(r.squeeze()) for r in summary_tensors]
 
-        # Compute reward outputs.
-        query_response_pairs = [q + r for q, r in zip(batch["query"], batch["response"])]
-        # rewards = sentiment_pipe(query_response_pairs, **reward_kwargs)
-
-        # You use the `nothate` item because this is the score for the positive `nothate` class.
-        # reward_tensors = [torch.tensor(reward[not_hate_index]["score"]) for reward in rewards]
-
         # Run PPO step.
-        # print(prompt_tensors, summary_tensors, reward_tensors)
         stats = ppo_trainer.step(prompt_tensors, summary_tensors, reward_tensors)
         ppo_trainer.log_stats(stats, batch, reward_tensors)
 
+        print(f'step: {step}, batch size: {len(prompts)}')
         print(f'objective/kl: {stats["objective/kl"]}')
         print(f'ppo/returns/mean: {stats["ppo/returns/mean"]}')
         print(f'ppo/policy/advantages_mean: {stats["ppo/policy/advantages_mean"]}')
         print('-' * 100)
 
-# if __name__ == '__main__':
-#     tokenizer = AutoTokenizer.from_pretrained('gpt2')
-#     tokenizer.pad_token = tokenizer.eos_token
-#     data = prep_data(tokenizer, 100, './dd.jsonl')
-#     print(data)
+    ppo_model.push_to_hub("felixdae/rl-cs324-length-control")
