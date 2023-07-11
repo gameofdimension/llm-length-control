@@ -115,13 +115,6 @@ def train(data_path):
     #     "do_sample": True
     # }
 
-    generation_kwargs = {
-        "do_sample": True,
-        "top_k": 0.0,
-        "top_p": 1.0,
-        "max_new_tokens": 1000,
-    }
-
     # reward_kwargs = {
     #     "top_k": None,  # Return all scores.
     #     "function_to_apply": "none",  # You want the raw logits without softmax.
@@ -130,6 +123,14 @@ def train(data_path):
 
     max_ppo_steps = 10
     tokenizer, ppo_trainer = make_ppo_trainer(data_path)
+
+    generation_kwargs = {
+        "do_sample": True,
+        "top_k": 0.0,
+        "top_p": 1.0,
+        "max_new_tokens": 1000,
+        'pad_token_id': tokenizer.pad_token_id,
+    }
     for step, batch in enumerate(ppo_trainer.dataloader):
         # Break when you reach max_steps.
         if step >= max_ppo_steps:
@@ -151,9 +152,9 @@ def train(data_path):
 
             # summary_tensors.append(summary.squeeze()[-max_new_tokens:])
             output_ids = summary.squeeze()
-            # reward = len(output_ids)
             summary_tensors.append(output_ids)
-            reward_tensors = [torch.tensor(compute_reward(tokenizer, prompt, output_ids))]
+            reward = compute_reward(tokenizer, prompt, output_ids)
+            reward_tensors.append(torch.tensor(reward))
 
         # This needs to be called "response".
         batch["response"] = [tokenizer.decode(r.squeeze()) for r in summary_tensors]
