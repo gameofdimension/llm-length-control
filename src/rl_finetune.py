@@ -117,6 +117,8 @@ def train(data_path):
 
     generation_kwargs = {
         "do_sample": True,
+        "top_k": 0.0,
+        "top_p": 1.0,
         "max_new_tokens": 1000,
     }
 
@@ -144,6 +146,7 @@ def train(data_path):
             # max_new_tokens = output_length_sampler()
 
             # generation_kwargs["max_new_tokens"] = max_new_tokens
+            print(prompt, prompt_tensor)
             summary = ppo_trainer.generate(prompt_tensor, **generation_kwargs)
 
             # summary_tensors.append(summary.squeeze()[-max_new_tokens:])
@@ -170,7 +173,6 @@ def train(data_path):
         print(f'ppo/returns/mean: {stats["ppo/returns/mean"]}')
         print(f'ppo/policy/advantages_mean: {stats["ppo/policy/advantages_mean"]}')
         print('-' * 100)
-
 
 # if __name__ == '__main__':
 #     tokenizer = AutoTokenizer.from_pretrained('gpt2')
