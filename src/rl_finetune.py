@@ -139,31 +139,3 @@ def train(data_path, max_ppo_steps):
         print('-' * 100)
 
     ppo_model.push_to_hub("felixdae/rl-cs324-length-control")
-
-
-class Sampler:
-    def __init__(self, device='cpu'):
-        # load the model from the Hub
-        peft_model_id = "felixdae/rl-cs324-length-control"
-        config = PeftConfig.from_pretrained(peft_model_id)
-        model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path)
-        model = PeftModel.from_pretrained(model, peft_model_id)
-        model = model.to(device)
-        model.eval()
-
-        tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
-
-        self.model = model
-        self.tokenizer = tokenizer
-        self.device = device
-
-    def generate(self, n: int):
-        inputs = self.tokenizer(f"<len> {n} <text>", return_tensors="pt")
-        with torch.no_grad():
-            outputs = self.model.generate(
-                input_ids=inputs["input_ids"].to(self.device),
-                do_sample=True,
-                pad_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=1000)
-            output_ids = outputs.detach().cpu().numpy()
-            return output_ids, self.tokenizer.batch_decode(output_ids)[0]

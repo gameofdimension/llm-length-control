@@ -1,6 +1,5 @@
-import torch
-from peft import LoraConfig, TaskType, get_peft_model, PeftConfig, PeftModel
-from transformers import DataCollatorForLanguageModeling, AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, TaskType, get_peft_model
+from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer
 
 from src.common import make_tokenizer, build_model, prepare_data, get_train_args
@@ -46,30 +45,3 @@ def train():
     )
     trainer.train()
     trainer.push_to_hub()
-
-
-class Sampler:
-    def __init__(self, device='cpu'):
-        peft_model_id = "felixdae/lora-cs324-length-control"
-        config = PeftConfig.from_pretrained(peft_model_id)
-        model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path)
-        model = PeftModel.from_pretrained(model, peft_model_id)
-        model = model.to(device)
-        model.eval()
-
-        tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
-
-        self.model = model
-        self.tokenizer = tokenizer
-        self.device = device
-
-    def generate(self, n: int):
-        inputs = self.tokenizer(f"<len> {n} <text>", return_tensors="pt")
-        with torch.no_grad():
-            outputs = self.model.generate(
-                input_ids=inputs["input_ids"].to(self.device),
-                do_sample=True,
-                pad_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=1000)
-            output_ids = outputs.detach().cpu().numpy()
-            return output_ids, self.tokenizer.batch_decode(output_ids)[0]
