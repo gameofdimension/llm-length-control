@@ -4,10 +4,9 @@ import random
 import torch
 from datasets import load_dataset
 from peft import PeftConfig, PeftModel
-from torch import FloatTensor
 from tqdm.autonotebook import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import create_reference_model, AutoModelForSeq2SeqLMWithValueHead, PPOConfig, PPOTrainer
+from trl import create_reference_model, AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
 
 
 def rl_collator(data):
@@ -20,7 +19,7 @@ def build_ppo_model():
 
     model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path)
     peft_model = PeftModel.from_pretrained(model, peft_model_id, is_trainable=True)
-    ppo_model = AutoModelForSeq2SeqLMWithValueHead.from_pretrained(
+    ppo_model = AutoModelForCausalLMWithValueHead.from_pretrained(
         peft_model, is_trainable=True)
     ref_model = create_reference_model(ppo_model)
     # model = model.to(device)
@@ -165,7 +164,7 @@ def train(data_path):
         # reward_tensors = [torch.tensor(reward[not_hate_index]["score"]) for reward in rewards]
 
         # Run PPO step.
-        print(prompt_tensors, summary_tensors, reward_tensors)
+        # print(prompt_tensors, summary_tensors, reward_tensors)
         stats = ppo_trainer.step(prompt_tensors, summary_tensors, reward_tensors)
         ppo_trainer.log_stats(stats, batch, reward_tensors)
 
