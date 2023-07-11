@@ -65,7 +65,7 @@ def make_data(n: int, path: str):
 
 
 def tk(tokenizer, sample):
-    sample['input_ids'] = tokenizer(sample['query'])
+    sample['input_ids'] = tokenizer(sample['query'])['input_ids']
     return sample
 
 
