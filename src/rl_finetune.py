@@ -4,6 +4,7 @@ import random
 import torch
 from datasets import load_dataset
 from peft import PeftConfig, PeftModel
+from torch import FloatTensor
 from tqdm.autonotebook import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import create_reference_model, AutoModelForSeq2SeqLMWithValueHead, PPOConfig, PPOTrainer
@@ -94,7 +95,7 @@ def make_ppo_trainer(data_path):
     return tokenizer, ppo_trainer
 
 
-def compute_reward(tokenizer, prompt: str, output_ids):
+def compute_reward(tokenizer, prompt: str, output_ids) -> float:
     target = float(prompt.split()[1])
     prefix_token_number = len(tokenizer(prompt)['input_ids'])
     return -(len(output_ids) - (prefix_token_number + 1) - target) ** 2
@@ -164,6 +165,7 @@ def train(data_path):
         # reward_tensors = [torch.tensor(reward[not_hate_index]["score"]) for reward in rewards]
 
         # Run PPO step.
+        print(prompt_tensors, summary_tensors, reward_tensors)
         stats = ppo_trainer.step(prompt_tensors, summary_tensors, reward_tensors)
         ppo_trainer.log_stats(stats, batch, reward_tensors)
 
