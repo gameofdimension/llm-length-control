@@ -63,7 +63,9 @@ def make_ppo_config():
         learning_rate=learning_rate,
         ppo_epochs=max_ppo_epochs,
         mini_batch_size=mini_batch_size,
-        batch_size=batch_size
+        batch_size=batch_size,
+        # log_with='tensorboard',
+        # project_kwargs={"logging_dir": PATH_TO_LOGS},
     )
     return config
 
@@ -155,7 +157,7 @@ def train(data_path, max_ppo_steps):
         stats = ppo_trainer.step(prompt_tensors, summary_tensors, reward_tensors)
         ppo_trainer.log_stats(stats, batch, reward_tensors)
 
-        print(f'step: {step}, batch size: {len(prompts)}')
+        print(f'step: {step}, batch size: {len(prompts)}, stats: {stats}')
         print(f'objective/kl: {stats["objective/kl"]}')
         print(f'ppo/returns/mean: {stats["ppo/returns/mean"]}')
         print(f'ppo/policy/advantages_mean: {stats["ppo/policy/advantages_mean"]}')
