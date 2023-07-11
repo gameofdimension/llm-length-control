@@ -13,15 +13,37 @@ def rl_collator(data):
     return dict((key, [d[key] for d in data]) for key in data[0])
 
 
+def print_number_of_trainable_model_parameters(model):
+    trainable_model_params = 0
+    all_model_params = 0
+    for _, param in model.named_parameters():
+        all_model_params += param.numel()
+        if param.requires_grad:
+            trainable_model_params += param.numel()
+    return '\n'.join([
+        f"trainable model parameters: {trainable_model_params}",
+        f"all model parameters: {all_model_params}",
+        f"percentage of trainable model parameters: {100 * trainable_model_params / all_model_params:.2f}%"
+    ])
+
+
 def build_ppo_model():
     peft_model_id = "felixdae/lora-cs324-length-control"
     config = PeftConfig.from_pretrained(peft_model_id)
 
     model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path)
     peft_model = PeftModel.from_pretrained(model, peft_model_id, is_trainable=True)
+    print(f'PEFT model parameters to be updated:')
+    print(print_number_of_trainable_model_parameters(peft_model))
+
     ppo_model = AutoModelForCausalLMWithValueHead.from_pretrained(
         peft_model, is_trainable=True)
+    print(f'ppo model parameters to be updated:')
+    print(print_number_of_trainable_model_parameters(ppo_model))
+
     ref_model = create_reference_model(ppo_model)
+    print(f'reference model parameters to be updated:')
+    print(print_number_of_trainable_model_parameters(ref_model))
 
     tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
     tokenizer.pad_token = tokenizer.eos_token
