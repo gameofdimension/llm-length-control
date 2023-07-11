@@ -84,7 +84,7 @@ def make_ppo_trainer(data_path):
 
     # context_length = 128
     # tokenized_datasets = prepare_data(context_length, tokenizer, 100000, 1000)
-    dataset = prep_data(tokenizer, 100000, data_path)
+    dataset = prep_data(tokenizer, 100_000, data_path)
 
     ppo_trainer = PPOTrainer(
         config=config,
@@ -103,7 +103,7 @@ def compute_reward(tokenizer, prompt: str, output_ids):
     return -(len(output_ids) - (prefix_token_number + 1) - target) ** 2
 
 
-def train():
+def train(data_path):
     # output_min_length = 100
     # output_max_length = 400
     # output_length_sampler = LengthSampler(output_min_length, output_max_length)
@@ -127,7 +127,7 @@ def train():
     # }
 
     max_ppo_steps = 10
-    tokenizer, ppo_trainer = make_ppo_trainer()
+    tokenizer, ppo_trainer = make_ppo_trainer(data_path)
     for step, batch in enumerate(ppo_trainer.dataloader):
         # Break when you reach max_steps.
         if step >= max_ppo_steps:
