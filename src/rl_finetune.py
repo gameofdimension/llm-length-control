@@ -157,10 +157,15 @@ def train(data_path, max_ppo_steps):
         stats = ppo_trainer.step(prompt_tensors, summary_tensors, reward_tensors)
         ppo_trainer.log_stats(stats, batch, reward_tensors)
 
-        print(f'step: {step}, batch size: {len(prompts)}, stats: {stats}')
+        print(f'step: {step}, batch size: {len(prompts)}')
         print(f'objective/kl: {stats["objective/kl"]}')
+        print(f'objective/kl_coef: {stats["objective/kl_coef"]}')
         print(f'ppo/returns/mean: {stats["ppo/returns/mean"]}')
         print(f'ppo/policy/advantages_mean: {stats["ppo/policy/advantages_mean"]}')
+        print(f'ppo/mean_scores: {stats["ppo/mean_scores"]}')
+        print(f'ppo/mean_non_score_reward: {stats["ppo/mean_non_score_reward"]}')
+        print(f'ppo/loss/value: {stats["ppo/loss/value"]}')
+        print(f'ppo/val/clipfrac: {stats["ppo/val/clipfrac"]}')
         print('-' * 100)
         if (1 + step) % 10 == 0:
             ppo_model.push_to_hub("felixdae/rl-cs324-length-control")
