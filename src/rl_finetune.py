@@ -102,7 +102,7 @@ def make_ppo_trainer(data_path):
     tokenizer, ppo_model, ref_model = build_ppo_model()
     config = make_ppo_config()
 
-    dataset = prep_data(tokenizer, 1_000, data_path)
+    dataset = prep_data(tokenizer, 10_000, data_path)
 
     ppo_trainer = PPOTrainer(
         config=config,
