@@ -2,14 +2,11 @@ import json
 import random
 
 import torch
+from datasets import load_dataset
 from peft import PeftConfig, PeftModel
+from tqdm.autonotebook import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import create_reference_model, AutoModelForSeq2SeqLMWithValueHead, PPOConfig, PPOTrainer
-from trl.core import LengthSampler
-
-from src.common import prepare_data
-
-from datasets import load_dataset
 
 
 def rl_collator(data):
@@ -131,7 +128,7 @@ def train(data_path):
         "max_new_tokens": 1000,
         'pad_token_id': tokenizer.pad_token_id,
     }
-    for step, batch in enumerate(ppo_trainer.dataloader):
+    for step, batch in tqdm(enumerate(ppo_trainer.dataloader)):
         # Break when you reach max_steps.
         if step >= max_ppo_steps:
             break
@@ -147,7 +144,7 @@ def train(data_path):
             # max_new_tokens = output_length_sampler()
 
             # generation_kwargs["max_new_tokens"] = max_new_tokens
-            print(prompt, prompt_tensor)
+            # print(prompt, prompt_tensor)
             summary = ppo_trainer.generate(prompt_tensor, **generation_kwargs)
 
             # summary_tensors.append(summary.squeeze()[-max_new_tokens:])
