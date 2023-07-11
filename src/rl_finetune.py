@@ -72,7 +72,7 @@ def tk(tokenizer, sample):
 def prep_data(tokenizer, sample: int, path):
     data = load_dataset('json', data_files=path, split="train")
     data = data.shuffle().select(range(sample))
-    data.map(lambda x: tk(tokenizer, x), batched=False)
+    data = data.map(lambda x: tk(tokenizer, x), batched=False)
     data.set_format(type="torch")
 
     return data
@@ -170,3 +170,10 @@ def train(data_path):
         print(f'ppo/returns/mean: {stats["ppo/returns/mean"]}')
         print(f'ppo/policy/advantages_mean: {stats["ppo/policy/advantages_mean"]}')
         print('-' * 100)
+
+
+# if __name__ == '__main__':
+#     tokenizer = AutoTokenizer.from_pretrained('gpt2')
+#     tokenizer.pad_token = tokenizer.eos_token
+#     data = prep_data(tokenizer, 100, './dd.jsonl')
+#     print(data)
