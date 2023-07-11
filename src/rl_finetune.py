@@ -118,7 +118,8 @@ def make_ppo_trainer(data_path):
 def compute_reward(tokenizer, prompt: str, output_ids) -> float:
     target = float(prompt.split()[1])
     prefix_token_number = len(tokenizer(prompt)['input_ids'])
-    return -(len(output_ids) - (prefix_token_number + 1) - target) ** 2
+    # return -(len(output_ids) - (prefix_token_number + 1) - target) ** 2
+    return -abs(len(output_ids) - (prefix_token_number + 1) - target)
 
 
 def train(data_path, max_ppo_steps):
